@@ -1,0 +1,257 @@
+html_content = """<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>오늘 뭐 먹지? | 저녁 메뉴 추천</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Gowun+Dodum&family=Jua&display=swap" rel="stylesheet">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Gowun Dodum', sans-serif;
+            background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 99%, #fecfef 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background-color: rgba(255, 255, 255, 0.92);
+            backdrop-filter: blur(10px);
+            border-radius: 30px;
+            padding: 40px 30px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.12);
+            text-align: center;
+            max-width: 480px;
+            width: 100%;
+            transition: all 0.3s ease;
+        }
+
+        h1 {
+            font-family: 'Jua', sans-serif;
+            font-size: 2.2rem;
+            color: #ff5e62;
+            margin-bottom: 10px;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.05);
+        }
+
+        .subtitle {
+            font-size: 1rem;
+            color: #666;
+            margin-bottom: 30px;
+        }
+
+        .display-card {
+            background-color: #fff6f6;
+            border: 3px dashed #ffb3b5;
+            border-radius: 20px;
+            padding: 40px 20px;
+            margin-bottom: 30px;
+            min-height: 220px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .emoji-box {
+            font-size: 5rem;
+            margin-bottom: 15px;
+            line-height: 1;
+            transition: transform 0.2s ease;
+        }
+
+        .menu-name {
+            font-family: 'Jua', sans-serif;
+            font-size: 1.8rem;
+            color: #333;
+            min-height: 2rem;
+        }
+
+        .menu-category {
+            display: inline-block;
+            margin-top: 8px;
+            padding: 4px 12px;
+            background-color: #ffe3e4;
+            color: #ff5e62;
+            border-radius: 15px;
+            font-size: 0.85rem;
+            font-weight: bold;
+        }
+
+        .btn-recommend {
+            font-family: 'Jua', sans-serif;
+            font-size: 1.4rem;
+            color: white;
+            background: linear-gradient(45deg, #ff9966, #ff5e62);
+            border: none;
+            border-radius: 50px;
+            padding: 16px 36px;
+            cursor: pointer;
+            box-shadow: 0 8px 20px rgba(255, 94, 98, 0.35);
+            transition: all 0.2s ease;
+            outline: none;
+            width: 100%;
+        }
+
+        .btn-recommend:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 25px rgba(255, 94, 98, 0.45);
+        }
+
+        .btn-recommend:active {
+            transform: translateY(1px);
+            box-shadow: 0 5px 12px rgba(255, 94, 98, 0.3);
+        }
+
+        /* 통계 및 팁 섹션 */
+        .footer-info {
+            margin-top: 25px;
+            font-size: 0.85rem;
+            color: #888;
+        }
+
+        /* 통신/애니메이션 효과 */
+        .spin {
+            animation: bounce 0.15s infinite alternate;
+        }
+
+        @keyframes bounce {
+            0% { transform: scale(1) translateY(0); }
+            100% { transform: scale(1.15) translateY(-10px); }
+        }
+
+        .pop-in {
+            animation: pop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes pop {
+            0% { transform: scale(0.5); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>오늘 뭐 먹지? 🍽️</h1>
+        <p class="subtitle">결정 장애 해결사! 저녁 메뉴를 추천해드립니다.</p>
+
+        <div class="display-card" id="displayCard">
+            <div class="emoji-box" id="emojiBox">❓</div>
+            <div class="menu-name" id="menuName">버튼을 눌러주세요!</div>
+            <div class="menu-category" id="menuCategory" style="display: none;">카테고리</div>
+        </div>
+
+        <button class="btn-recommend" id="recommendBtn" onclick="getRecommendation()">
+            ✨ 저녁 메뉴 추천 ✨
+        </button>
+
+        <div class="footer-info">
+            마음에 들지 않으면 한 번 더 눌러보세요!
+        </div>
+    </div>
+
+    <script>
+        const menuList = [
+            // 한식
+            { name: "김치찌개", emoji: "🍲", category: "한식" },
+            { name: "된장찌개", emoji: "🥘", category: "한식" },
+            { name: "삼겹살", emoji: "🥓", category: "한식" },
+            { name: "비빔밥", emoji: "🥗", category: "한식" },
+            { name: "떡볶이", emoji: "🍢", category: "한식/분식" },
+            { name: "제육볶음", emoji: "🥩", category: "한식" },
+            { name: "치킨", emoji: "🍗", category: "야식/한식" },
+            { name: "족발&보쌈", emoji: "🍖", category: "한식" },
+            { name: "갈비탕", emoji: "🥣", category: "한식" },
+            { name: "불고기", emoji: "🥩", category: "한식" },
+
+            // 일식
+            { name: "초밥", emoji: "🍣", category: "일식" },
+            { name: "라멘", emoji: "🍜", category: "일식" },
+            { name: "돈가스", emoji: "🍱", category: "일식" },
+            { name: "우동", emoji: "🍲", category: "일식" },
+            { name: "회덮밥", emoji: "🥣", category: "일식" },
+
+            // 중식
+            { name: "짜장면", emoji: "🍜", category: "중식" },
+            { name: "짬뽕", emoji: "🍜", category: "중식" },
+            { name: "탕수육", emoji: "🥟", category: "중식" },
+            { name: "마라탕", emoji: "🥘", category: "중식" },
+
+            // 양식/기타
+            { name: "피자", emoji: "🍕", category: "양식" },
+            { name: "파스타", emoji: "🍝", category: "양식" },
+            { name: "햄버거", emoji: "🍔", category: "양식" },
+            { name: "스테이크", emoji: "🥩", category: "양식" },
+            { name: "타코", emoji: "🌮", category: "멕시칸" },
+            { name: "쌀국수", emoji: "🍜", category: "아시안" },
+            { name: "카레", emoji: "🍛", category: "아시안" },
+            { name: "샌드위치", emoji: "🥪", category: "간식/양식" }
+        ];
+
+        let isSpinning = false;
+
+        function getRecommendation() {
+            if (isSpinning) return;
+            
+            isSpinning = true;
+            const emojiBox = document.getElementById('emojiBox');
+            const menuName = document.getElementById('menuName');
+            const menuCategory = document.getElementById('menuCategory');
+            const btn = document.getElementById('recommendBtn');
+
+            // 애니메이션 시작
+            emojiBox.classList.add('spin');
+            emojiBox.classList.remove('pop-in');
+            menuName.textContent = "추천 중...";
+            menuCategory.style.display = "none";
+            btn.disabled = true;
+
+            // 랜덤 슬롯 효과처럼 연속 변경
+            let counter = 0;
+            const interval = setInterval(() => {
+                const tempIndex = Math.floor(Math.random() * menuList.length);
+                emojiBox.textContent = menuList[tempIndex].emoji;
+                counter++;
+            }, 80);
+
+            // 1.2초 후 최종 결정
+            setTimeout(() => {
+                clearInterval(interval);
+                
+                const finalIndex = Math.floor(Math.random() * menuList.length);
+                const selectedMenu = menuList[finalIndex];
+
+                emojiBox.classList.remove('spin');
+                emojiBox.classList.add('pop-in');
+
+                emojiBox.textContent = selectedMenu.emoji;
+                menuName.textContent = selectedMenu.name;
+                menuCategory.textContent = selectedMenu.category;
+                menuCategory.style.display = "inline-block";
+
+                btn.disabled = false;
+                isSpinning = false;
+            }, 1200);
+        }
+    </script>
+</body>
+</html>
+"""
+
+with open("dinner_menu_recommendation.html", "w", encoding="utf-8") as f:
+    f.write(html_content)
+
+print("HTML file generated successfully.")
