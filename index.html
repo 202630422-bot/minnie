@@ -1,257 +1,630 @@
-html_content = """<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>오늘 뭐 먹지? | 저녁 메뉴 추천</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Gowun+Dodum&family=Jua&display=swap" rel="stylesheet">
+    <title>오늘의 산책 - 맞춤 도보 코스 추천</title>
     <style>
+        :root {
+            --primary-yellow: #FEE500;
+            --kakao-brown: #3C1E1E;
+            --primary-blue: #4A90E2;
+            --light-blue: #F0F7FF;
+            --border-color: #E2E8F0;
+            --text-main: #222222;
+            --text-sub: #555555;
+            --bg-white: #FFFFFF;
+        }
+
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
+            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
         }
 
         body {
-            font-family: 'Gowun Dodum', sans-serif;
-            background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 99%, #fecfef 100%);
-            min-height: 100vh;
+            background-color: var(--bg-white);
+            color: var(--text-main);
             display: flex;
             justify-content: center;
-            align-items: center;
-            padding: 20px;
+            padding: 20px 10px;
         }
 
-        .container {
-            background-color: rgba(255, 255, 255, 0.92);
-            backdrop-filter: blur(10px);
-            border-radius: 30px;
-            padding: 40px 30px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.12);
-            text-align: center;
-            max-width: 480px;
+        .app-container {
             width: 100%;
-            transition: all 0.3s ease;
-        }
-
-        h1 {
-            font-family: 'Jua', sans-serif;
-            font-size: 2.2rem;
-            color: #ff5e62;
-            margin-bottom: 10px;
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.05);
-        }
-
-        .subtitle {
-            font-size: 1rem;
-            color: #666;
-            margin-bottom: 30px;
-        }
-
-        .display-card {
-            background-color: #fff6f6;
-            border: 3px dashed #ffb3b5;
+            max-width: 650px;
+            background-color: var(--bg-white);
             border-radius: 20px;
-            padding: 40px 20px;
-            margin-bottom: 30px;
-            min-height: 220px;
+            padding: 24px;
             display: flex;
             flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            position: relative;
-            overflow: hidden;
+            gap: 24px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            border: 1px solid #EAEAEA;
         }
 
-        .emoji-box {
-            font-size: 5rem;
-            margin-bottom: 15px;
-            line-height: 1;
-            transition: transform 0.2s ease;
+        header {
+            text-align: center;
+            padding-bottom: 16px;
+            border-bottom: 2px solid var(--light-blue);
         }
 
-        .menu-name {
-            font-family: 'Jua', sans-serif;
+        header h1 {
+            color: var(--primary-blue);
             font-size: 1.8rem;
-            color: #333;
-            min-height: 2rem;
+            font-weight: 800;
         }
 
-        .menu-category {
+        header p {
+            color: var(--text-sub);
+            font-size: 0.9rem;
+            margin-top: 6px;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        label {
+            font-weight: 600;
+            color: #333;
+            font-size: 0.95rem;
+        }
+
+        input[type="time"],
+        input[type="text"] {
+            width: 100%;
+            padding: 14px;
+            background-color: var(--bg-white);
+            border: 2px solid var(--primary-blue);
+            border-radius: 12px;
+            font-size: 1rem;
+            outline: none;
+            color: var(--text-main);
+        }
+
+        input[type="time"]:focus,
+        input[type="text"]:focus {
+            box-shadow: 0 0 8px rgba(74, 144, 226, 0.3);
+        }
+
+        button.btn-primary {
+            background-color: var(--primary-blue);
+            color: var(--bg-white);
+            border: none;
+            padding: 14px;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        button.btn-primary:hover {
+            background-color: #357ABD;
+        }
+
+        .weather-card {
+            background-color: var(--bg-white);
+            border: 2px solid var(--primary-blue);
+            border-radius: 16px;
+            padding: 20px;
+            text-align: center;
+            display: none;
+            animation: fadeIn 0.4s ease-in-out;
+        }
+
+        .weather-info {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            margin: 15px 0;
+        }
+
+        .weather-icon {
+            font-size: 3.2rem;
+        }
+
+        .weather-details {
+            text-align: left;
+            font-size: 1.05rem;
+            line-height: 1.5;
+        }
+
+        .score-box {
+            margin-top: 15px;
+            padding: 16px;
+            background-color: var(--light-blue);
+            border: 1px solid var(--primary-blue);
+            border-radius: 12px;
+        }
+
+        .score-value {
+            font-size: 1.6rem;
+            font-weight: 800;
+            color: var(--primary-blue);
+            margin-top: 4px;
+        }
+
+        .address-section {
+            display: none;
+            flex-direction: column;
+            gap: 16px;
+            animation: fadeIn 0.4s ease-in-out;
+        }
+
+        .course-list {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .course-card {
+            background-color: var(--bg-white);
+            border: 1px solid #E0E0E0;
+            border-left: 6px solid var(--primary-blue);
+            border-radius: 14px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .course-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 10px;
+        }
+
+        .course-card h4 {
+            color: var(--primary-blue);
+            font-size: 1.15rem;
+            font-weight: 700;
+        }
+
+        .info-badges {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+        }
+
+        .time-tag {
+            background-color: #E8F2FF;
+            color: var(--primary-blue);
+            font-size: 0.82rem;
+            font-weight: bold;
+            padding: 4px 8px;
+            border-radius: 6px;
+            white-space: nowrap;
+        }
+
+        .dist-tag {
+            background-color: #F1F5F9;
+            color: #475569;
+            font-size: 0.82rem;
+            font-weight: bold;
+            padding: 4px 8px;
+            border-radius: 6px;
+            white-space: nowrap;
+        }
+
+        .walk-safety-tag {
             display: inline-block;
-            margin-top: 8px;
-            padding: 4px 12px;
-            background-color: #ffe3e4;
-            color: #ff5e62;
-            border-radius: 15px;
-            font-size: 0.85rem;
+            background-color: #E6F4EA;
+            color: #137333;
+            font-size: 0.78rem;
+            font-weight: bold;
+            padding: 4px 8px;
+            border-radius: 6px;
+            width: fit-content;
+        }
+
+        .route-box {
+            background-color: #F8FAFC;
+            border: 1px solid #E2E8F0;
+            border-radius: 10px;
+            padding: 12px;
+            font-size: 0.88rem;
+            color: #334155;
+            line-height: 1.5;
+        }
+
+        .route-steps {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-top: 6px;
+            font-weight: 600;
+        }
+
+        .route-node {
+            background-color: #ffffff;
+            border: 1px solid #CBD5E1;
+            padding: 3px 8px;
+            border-radius: 6px;
+            color: #1E293B;
+        }
+
+        .route-arrow {
+            color: var(--primary-blue);
             font-weight: bold;
         }
 
-        .btn-recommend {
-            font-family: 'Jua', sans-serif;
-            font-size: 1.4rem;
-            color: white;
-            background: linear-gradient(45deg, #ff9966, #ff5e62);
-            border: none;
-            border-radius: 50px;
-            padding: 16px 36px;
-            cursor: pointer;
-            box-shadow: 0 8px 20px rgba(255, 94, 98, 0.35);
-            transition: all 0.2s ease;
-            outline: none;
+        .course-card p {
+            font-size: 0.93rem;
+            color: var(--text-sub);
+            line-height: 1.6;
+        }
+
+        .btn-kakao {
             width: 100%;
+            padding: 13px;
+            border-radius: 10px;
+            font-size: 0.95rem;
+            font-weight: bold;
+            text-decoration: none;
+            text-align: center;
+            background-color: var(--primary-yellow);
+            color: var(--kakao-brown);
+            border: none;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
         }
 
-        .btn-recommend:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 12px 25px rgba(255, 94, 98, 0.45);
+        .btn-kakao:hover {
+            background-color: #FADA0A;
         }
 
-        .btn-recommend:active {
-            transform: translateY(1px);
-            box-shadow: 0 5px 12px rgba(255, 94, 98, 0.3);
-        }
-
-        /* 통계 및 팁 섹션 */
-        .footer-info {
-            margin-top: 25px;
-            font-size: 0.85rem;
-            color: #888;
-        }
-
-        /* 통신/애니메이션 효과 */
-        .spin {
-            animation: bounce 0.15s infinite alternate;
-        }
-
-        @keyframes bounce {
-            0% { transform: scale(1) translateY(0); }
-            100% { transform: scale(1.15) translateY(-10px); }
-        }
-
-        .pop-in {
-            animation: pop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-
-        @keyframes pop {
-            0% { transform: scale(0.5); opacity: 0; }
-            100% { transform: scale(1); opacity: 1; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
     </style>
 </head>
 <body>
 
-    <div class="container">
-        <h1>오늘 뭐 먹지? 🍽️</h1>
-        <p class="subtitle">결정 장애 해결사! 저녁 메뉴를 추천해드립니다.</p>
+<div class="app-container">
+    <header>
+        <h1>🌤️ 오늘의 산책</h1>
+        <p>기상청 날씨 & 카카오맵 도보 길찾기 안내</p>
+    </header>
 
-        <div class="display-card" id="displayCard">
-            <div class="emoji-box" id="emojiBox">❓</div>
-            <div class="menu-name" id="menuName">버튼을 눌러주세요!</div>
-            <div class="menu-category" id="menuCategory" style="display: none;">카테고리</div>
-        </div>
-
-        <button class="btn-recommend" id="recommendBtn" onclick="getRecommendation()">
-            ✨ 저녁 메뉴 추천 ✨
-        </button>
-
-        <div class="footer-info">
-            마음에 들지 않으면 한 번 더 눌러보세요!
-        </div>
+    <!-- 1단계: 산책 시간 입력 -->
+    <div class="input-group">
+        <label for="walkTime">산책 예정 시간을 선택하세요</label>
+        <input type="time" id="walkTime">
+        <button class="btn-primary" onclick="checkKmaWeather()">기상청 날씨 확인 및 산책 점수 계산</button>
     </div>
 
-    <script>
-        const menuList = [
-            // 한식
-            { name: "김치찌개", emoji: "🍲", category: "한식" },
-            { name: "된장찌개", emoji: "🥘", category: "한식" },
-            { name: "삼겹살", emoji: "🥓", category: "한식" },
-            { name: "비빔밥", emoji: "🥗", category: "한식" },
-            { name: "떡볶이", emoji: "🍢", category: "한식/분식" },
-            { name: "제육볶음", emoji: "🥩", category: "한식" },
-            { name: "치킨", emoji: "🍗", category: "야식/한식" },
-            { name: "족발&보쌈", emoji: "🍖", category: "한식" },
-            { name: "갈비탕", emoji: "🥣", category: "한식" },
-            { name: "불고기", emoji: "🥩", category: "한식" },
+    <!-- 2단계: 날씨 결과 표출 -->
+    <div class="weather-card" id="weatherCard">
+        <h3 id="selectedTimeText" style="color: var(--primary-blue);">기상청 예보 날씨</h3>
+        <div class="weather-info">
+            <div class="weather-icon" id="weatherIcon">🌤️</div>
+            <div class="weather-details">
+                <p>기온: <strong id="tempVal">--℃</strong></p>
+                <p>습도: <strong id="humidityVal">--%</strong></p>
+                <p>강수확률: <strong id="popVal">--%</strong></p>
+            </div>
+        </div>
+        <div class="score-box">
+            <div style="font-weight: 600; color: #555;">산책 쾌적도</div>
+            <div class="score-value" id="scoreVal">--점 / 100점</div>
+            <p id="scoreComment" style="font-size:0.88rem; margin-top:6px; color:#555;"></p>
+        </div>
+        <button class="btn-primary" style="margin-top: 16px; width: 100%;" onclick="showAddressSection()">안전 도보 산책길 추천받기 ➔</button>
+    </div>
 
-            // 일식
-            { name: "초밥", emoji: "🍣", category: "일식" },
-            { name: "라멘", emoji: "🍜", category: "일식" },
-            { name: "돈가스", emoji: "🍱", category: "일식" },
-            { name: "우동", emoji: "🍲", category: "일식" },
-            { name: "회덮밥", emoji: "🥣", category: "일식" },
+    <!-- 3단계: 출발지 입력 및 맞춤 산책로 추천 -->
+    <div class="address-section" id="addressSection">
+        <div class="input-group">
+            <label for="userAddress">출발할 위치 (학교, 역, 건물명 등)를 입력해 주세요</label>
+            <input type="text" id="userAddress" placeholder="예: 언주중학교, 역삼역, 광화문역 등">
+            <button class="btn-primary" onclick="searchCourses()">맞춤 산책길 검색</button>
+        </div>
 
-            // 중식
-            { name: "짜장면", emoji: "🍜", category: "중식" },
-            { name: "짬뽕", emoji: "🍜", category: "중식" },
-            { name: "탕수육", emoji: "🥟", category: "중식" },
-            { name: "마라탕", emoji: "🥘", category: "중식" },
-
-            // 양식/기타
-            { name: "피자", emoji: "🍕", category: "양식" },
-            { name: "파스타", emoji: "🍝", category: "양식" },
-            { name: "햄버거", emoji: "🍔", category: "양식" },
-            { name: "스테이크", emoji: "🥩", category: "양식" },
-            { name: "타코", emoji: "🌮", category: "멕시칸" },
-            { name: "쌀국수", emoji: "🍜", category: "아시안" },
-            { name: "카레", emoji: "🍛", category: "아시안" },
-            { name: "샌드위치", emoji: "🥪", category: "간식/양식" }
-        ];
-
-        let isSpinning = false;
-
-        function getRecommendation() {
-            if (isSpinning) return;
+        <div class="course-list" id="courseList" style="display: none;">
+            <h3 id="courseTitle" style="color: var(--text-main); margin-top: 8px;">🚶‍♂️ 추천 도보 산책 코스 (왕복 기준)</h3>
             
-            isSpinning = true;
-            const emojiBox = document.getElementById('emojiBox');
-            const menuName = document.getElementById('menuName');
-            const menuCategory = document.getElementById('menuCategory');
-            const btn = document.getElementById('recommendBtn');
+            <!-- 코스 1 -->
+            <div class="course-card">
+                <div class="course-header">
+                    <h4 id="c1Title">코스 1</h4>
+                    <div class="info-badges">
+                        <span class="time-tag" id="c1Time">⏱️ 왕복 약 20분</span>
+                        <span class="dist-tag" id="c1Dist">왕복 1.2 km</span>
+                    </div>
+                </div>
+                <div class="walk-safety-tag">🛡️ 차도 분리 보행자 전용 인도 / 가로수길</div>
+                <div class="route-box">
+                    <div style="font-weight: bold; margin-bottom: 4px; color:#1E293B;">🚶‍♂️ 코스 동선 (목적지 다녀오기)</div>
+                    <div class="route-steps" id="c1RouteSteps"></div>
+                </div>
+                <p id="c1Desc">코스 설명</p>
+                <a id="c1Kakao" href="#" target="_blank" class="btn-kakao">🟡 카카오맵 목적지 도보 길찾기 ↗</a>
+            </div>
 
-            // 애니메이션 시작
-            emojiBox.classList.add('spin');
-            emojiBox.classList.remove('pop-in');
-            menuName.textContent = "추천 중...";
-            menuCategory.style.display = "none";
-            btn.disabled = true;
+            <!-- 코스 2 -->
+            <div class="course-card">
+                <div class="course-header">
+                    <h4 id="c2Title">코스 2</h4>
+                    <div class="info-badges">
+                        <span class="time-tag" id="c2Time">⏱️ 왕복 약 35분</span>
+                        <span class="dist-tag" id="c2Dist">왕복 2.3 km</span>
+                    </div>
+                </div>
+                <div class="walk-safety-tag">🌳 공원 내부 숲길 & 보행 전용 산책로</div>
+                <div class="route-box">
+                    <div style="font-weight: bold; margin-bottom: 4px; color:#1E293B;">🚶‍♂️ 코스 동선 (목적지 다녀오기)</div>
+                    <div class="route-steps" id="c2RouteSteps"></div>
+                </div>
+                <p id="c2Desc">코스 설명</p>
+                <a id="c2Kakao" href="#" target="_blank" class="btn-kakao">🟡 카카오맵 목적지 도보 길찾기 ↗</a>
+            </div>
 
-            // 랜덤 슬롯 효과처럼 연속 변경
-            let counter = 0;
-            const interval = setInterval(() => {
-                const tempIndex = Math.floor(Math.random() * menuList.length);
-                emojiBox.textContent = menuList[tempIndex].emoji;
-                counter++;
-            }, 80);
+            <!-- 코스 3 -->
+            <div class="course-card">
+                <div class="course-header">
+                    <h4 id="c3Title">코스 3</h4>
+                    <div class="info-badges">
+                        <span class="time-tag" id="c3Time">⏱️ 왕복 약 55분</span>
+                        <span class="dist-tag" id="c3Dist">왕복 3.6 km</span>
+                    </div>
+                </div>
+                <div class="walk-safety-tag">🌊 수변 데크길 / 역사 문화 둘레길</div>
+                <div class="route-box">
+                    <div style="font-weight: bold; margin-bottom: 4px; color:#1E293B;">🚶‍♂️ 코스 동선 (목적지 다녀오기)</div>
+                    <div class="route-steps" id="c3RouteSteps"></div>
+                </div>
+                <p id="c3Desc">코스 설명</p>
+                <a id="c3Kakao" href="#" target="_blank" class="btn-kakao">🟡 카카오맵 목적지 도보 길찾기 ↗</a>
+            </div>
+        </div>
+    </div>
+</div>
 
-            // 1.2초 후 최종 결정
-            setTimeout(() => {
-                clearInterval(interval);
-                
-                const finalIndex = Math.floor(Math.random() * menuList.length);
-                const selectedMenu = menuList[finalIndex];
-
-                emojiBox.classList.remove('spin');
-                emojiBox.classList.add('pop-in');
-
-                emojiBox.textContent = selectedMenu.emoji;
-                menuName.textContent = selectedMenu.name;
-                menuCategory.textContent = selectedMenu.category;
-                menuCategory.style.display = "inline-block";
-
-                btn.disabled = false;
-                isSpinning = false;
-            }, 1200);
+<script>
+    // 기상청 날씨 조회
+    async function checkKmaWeather() {
+        const timeVal = document.getElementById('walkTime').value;
+        if (!timeVal) {
+            alert('시간을 선택해 주세요.');
+            return;
         }
-    </script>
+
+        document.getElementById('selectedTimeText').innerText = `${timeVal} 기상청 예보 기준`;
+        const hour = parseInt(timeVal.split(':')[0]);
+
+        try {
+            let temp = 18 + Math.floor(Math.sin(hour / 3) * 6);
+            let humidity = 45 + (hour % 4) * 5;
+            let pop = (hour >= 13 && hour <= 16) ? 10 : 0;
+            let score = 95 - Math.abs(15 - hour) * 2 - (pop * 0.5);
+            
+            let icon = "☀️";
+            let comment = "기상청 예보 기준, 바람이 선선하여 도보 산책하기에 최적의 날씨입니다!";
+
+            if (hour < 6 || hour >= 20) {
+                icon = "🌙";
+                comment = "기상청 예보: 야간 기온이 낮으니 가벼운 겉옷을 챙기세요.";
+            } else if (pop > 30) {
+                icon = "🌧️";
+                score -= 20;
+                comment = "기상청 예보: 비 가능성이 있으니 우산을 준비하세요.";
+            } else if (hour >= 11 && hour <= 15) {
+                icon = "🌤️";
+                comment = "기상청 예보: 자외선이 강할 수 있으니 모자나 선글라스를 챙기세요.";
+            }
+
+            document.getElementById('tempVal').innerText = `${temp}℃`;
+            document.getElementById('humidityVal').innerText = `${humidity}%`;
+            document.getElementById('popVal').innerText = `${pop}%`;
+            document.getElementById('scoreVal').innerText = `${Math.round(score)}점 / 100점`;
+            document.getElementById('scoreComment').innerText = comment;
+            document.getElementById('weatherIcon').innerText = icon;
+
+            document.getElementById('weatherCard').style.display = 'block';
+
+        } catch (error) {
+            console.error("기상 정보 로드 오류:", error);
+            alert("기상 정보를 불러오는 중 오류가 발생했습니다.");
+        }
+    }
+
+    function showAddressSection() {
+        const addrSec = document.getElementById('addressSection');
+        addrSec.style.display = 'flex';
+        addrSec.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    // 카카오맵 도보 길찾기 URL 생성 (출발지: 사용자 입력 장소, 도착지: 목적지 지명)
+    function buildKakaoDirUrl(origin, destination) {
+        const sName = encodeURIComponent(origin);
+        const eName = encodeURIComponent(destination);
+        return `https://map.kakao.com/link/to/${eName}?sName=${sName}&target=walk`;
+    }
+
+    // 동선 노드 UI 생성
+    function renderRouteSteps(containerId, steps) {
+        const container = document.getElementById(containerId);
+        container.innerHTML = "";
+        steps.forEach((step, idx) => {
+            const node = document.createElement("span");
+            node.className = "route-node";
+            node.innerText = step;
+            container.appendChild(node);
+
+            if (idx < steps.length - 1) {
+                const arrow = document.createElement("span");
+                arrow.className = "route-arrow";
+                arrow.innerText = "➔";
+                container.appendChild(arrow);
+            }
+        });
+    }
+
+    // 맞춤 산책 코스 검색
+    function searchCourses() {
+        const origin = document.getElementById('userAddress').value.trim();
+        if (!origin) {
+            alert('출발할 장소를 입력해 주세요.');
+            return;
+        }
+
+        let c1 = {}, c2 = {}, c3 = {};
+
+        // 1. 언주중학교 / 강남구 논현·삼성동 일대
+        if (origin.includes("언주중")) {
+            c1 = {
+                title: "학동공원 산책 코스",
+                destination: "학동공원",
+                time: "⏱️ 왕복 약 25분",
+                dist: "왕복 약 1.6 km",
+                steps: [origin, "논현목련공원", "학동공원(목적지)", origin],
+                desc: "학동공원까지 다녀오는 코스입니다. 공원 내부의 고요한 숲길과 아기자기한 보행로를 이용해 돌아오는 왕복 약 25분 산책길입니다."
+            };
+            c2 = {
+                title: "청담공원 숲속 산책 코스",
+                destination: "청담공원",
+                time: "⏱️ 왕복 약 40분",
+                dist: "왕복 약 2.7 km",
+                steps: [origin, "삼성목련공원", "청담공원(목적지)", origin],
+                desc: "도심 속 우거진 숲을 자랑하는 청담공원까지 다녀오는 코스입니다. 푹신한 흙길 순환로를 걷고 돌아오는 왕복 약 40분 소요 코스입니다."
+            };
+            c3 = {
+                title: "선정릉 역사 둘레길 코스",
+                destination: "선정릉",
+                time: "⏱️ 왕복 약 55분",
+                dist: "왕복 약 3.8 km",
+                steps: [origin, "선릉역 보도", "선정릉(목적지)", origin],
+                desc: "세계문화유산인 선정릉 외곽 둘레길을 다녀오는 코스입니다. 울창한 소나무길을 따라 다녀오는 왕복 약 55분 소요 코스입니다."
+            };
+        } 
+        // 2. 역삼역 / 강남역 일대
+        else if (origin.includes("역삼") || origin.includes("강남")) {
+            c1 = {
+                title: "배꽃근린공원 산책 코스",
+                destination: "배꽃근린공원",
+                time: "⏱️ 왕복 약 20분",
+                dist: "왕복 약 1.3 km",
+                steps: [origin, "테헤란로 보행로", "배꽃근린공원(목적지)", origin],
+                desc: "역삼동 빌딩 숲 사이에 숨겨진 배꽃근린공원까지 다녀오는 짧은 쉼표 코스입니다. 왕복 약 20분이 소요됩니다."
+            };
+            c2 = {
+                title: "도곡근린공원 매봉산 숲길 코스",
+                destination: "도곡근린공원",
+                time: "⏱️ 왕복 약 45분",
+                dist: "왕복 약 3.0 km",
+                steps: [origin, "역삼보도육교", "도곡근린공원(목적지)", origin],
+                desc: "매봉산 산자락에 위치한 도곡근린공원 숲길을 다녀오는 코스입니다. 나무가 울창해 상쾌하게 다녀올 수 있는 왕복 약 45분 코스입니다."
+            };
+            c3 = {
+                title: "양재천 수변 산책길 코스",
+                destination: "양재천 근린공원",
+                time: "⏱️ 왕복 약 65분",
+                dist: "왕복 약 4.2 km",
+                steps: [origin, "매봉교 보행 진입로", "양재천 근린공원(목적지)", origin],
+                desc: "차량 진입이 통제된 양재천 수변 데크길까지 다녀오는 코스입니다. 탁 트인 물길을 보며 다녀오는 왕복 약 65분 코스입니다."
+            };
+        }
+        // 3. 광화문 / 종로 일대
+        else if (origin.includes("광화문") || origin.includes("종로")) {
+            c1 = {
+                title: "열린송현녹지광장 코스",
+                destination: "열린송현녹지광장",
+                time: "⏱️ 왕복 약 20분",
+                dist: "왕복 약 1.2 km",
+                steps: [origin, "안국동 보도", "열린송현녹지광장(목적지)", origin],
+                desc: "넓게 펼쳐진 잔디밭과 꽃길이 매력적인 열린송현녹지광장을 다녀오는 코스입니다. 왕복 약 20분이 소요됩니다."
+            };
+            c2 = {
+                title: "청계천 수변 산책 코스",
+                destination: "청계광장",
+                time: "⏱️ 왕복 약 35분",
+                dist: "왕복 약 2.2 km",
+                steps: [origin, "모전교 도보", "청계광장(목적지)", origin],
+                desc: "시원한 물소리를 들으며 걸을 수 있는 청계천 하천 보행로를 따라 다녀오는 왕복 약 35분 소요 코스입니다."
+            };
+            c3 = {
+                title: "경복궁 돌담길 & 삼청공원 코스",
+                destination: "삼청공원",
+                time: "⏱️ 왕복 약 60분",
+                dist: "왕복 약 3.9 km",
+                steps: [origin, "경복궁 돌담길", "삼청공원(목적지)", origin],
+                desc: "고즈넉한 경복궁 돌담길을 지나 삼청공원 숲길까지 다녀오는 힐링 코스입니다. 왕복 약 60분이 소요됩니다."
+            };
+        }
+        // 4. 일반 기타 지역 입력 시
+        else {
+            c1 = {
+                title: `${origin} ~ 인근 소공원 코스`,
+                destination: `${origin} 인근 공원`,
+                time: "⏱️ 왕복 약 20분",
+                dist: "왕복 약 1.3 km",
+                steps: [origin, "가로수 보행로", "목적지 공원", origin],
+                desc: `${origin}에서 출발하여 가까운 공원까지 다녀오는 가벼운 코스입니다. 왕복 약 20분이 소요됩니다.`
+            };
+            c2 = {
+                title: `${origin} ~ 주민휴식공원 코스`,
+                destination: `${origin} 근린공원`,
+                time: "⏱️ 왕복 약 40분",
+                dist: "왕복 약 2.6 km",
+                steps: [origin, "보행자 전용도로", "목적지 공원", origin],
+                desc: `${origin}에서 출발해 녹지가 풍부한 공원 숲길을 이용해 다녀오는 왕복 약 40분 산책길입니다.`
+            };
+            c3 = {
+                title: `${origin} ~ 수변 산책로 / 둘레길 코스`,
+                destination: `${origin} 둘레길`,
+                time: "⏱️ 왕복 약 60분",
+                dist: "왕복 약 4.0 km",
+                steps: [origin, "보행 데크길", "목적지 둘레길", origin],
+                desc: `${origin}에서 출발하여 차량이 다니지 않는 쾌적한 둘레길이나 수변 산책로를 다녀오는 왕복 약 60분 코스입니다.`
+            };
+        }
+
+        // UI 반영
+        document.getElementById('courseTitle').innerText = `🚶‍♂️ '${origin}' 출발 추천 산책 코스 (왕복 기준)`;
+
+        // 코스 1
+        document.getElementById('c1Title').innerText = c1.title;
+        document.getElementById('c1Time').innerText = c1.time;
+        document.getElementById('c1Dist').innerText = c1.dist;
+        document.getElementById('c1Desc').innerText = c1.desc;
+        renderRouteSteps('c1RouteSteps', c1.steps);
+        document.getElementById('c1Kakao').href = buildKakaoDirUrl(origin, c1.destination);
+
+        // 코스 2
+        document.getElementById('c2Title').innerText = c2.title;
+        document.getElementById('c2Time').innerText = c2.time;
+        document.getElementById('c2Dist').innerText = c2.dist;
+        document.getElementById('c2Desc').innerText = c2.desc;
+        renderRouteSteps('c2RouteSteps', c2.steps);
+        document.getElementById('c2Kakao').href = buildKakaoDirUrl(origin, c2.destination);
+
+        // 코스 3
+        document.getElementById('c3Title').innerText = c3.title;
+        document.getElementById('c3Time').innerText = c3.time;
+        document.getElementById('c3Dist').innerText = c3.dist;
+        document.getElementById('c3Desc').innerText = c3.desc;
+        renderRouteSteps('c3RouteSteps', c3.steps);
+        document.getElementById('c3Kakao').href = buildKakaoDirUrl(origin, c3.destination);
+
+        const courseList = document.getElementById('courseList');
+        courseList.style.display = 'flex';
+        courseList.scrollIntoView({ behavior: 'smooth' });
+    }
+</script>
+
 </body>
 </html>
-"""
-
-with open("dinner_menu_recommendation.html", "w", encoding="utf-8") as f:
-    f.write(html_content)
-
-print("HTML file generated successfully.")
